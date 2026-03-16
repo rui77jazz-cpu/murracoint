@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EscolaCoin ₿</title>
+<title>MurraCoin ₿</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -574,8 +574,8 @@
   <div class="auth-container">
     <div class="logo-area">
       <div class="coin-icon">₿</div>
-      <h1>EscolaCoin</h1>
-      <p>A moeda digital da nossa escola</p>
+      <h1>MurraCoin</h1>
+      <p>A moeda digital da escola de Murraceses</p>
     </div>
     <div class="auth-card">
       <div class="tab-switcher">
@@ -688,7 +688,7 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <div class="coin-sm">₿</div>
-      EscolaCoin
+      MurraCoin
     </div>
     <div class="navbar-right">
       <span class="navbar-user" id="student-name-nav"></span>
@@ -700,7 +700,7 @@
     <div class="balance-card">
       <div class="balance-label">💰 O meu saldo</div>
       <div class="balance-amount" id="student-balance">0</div>
-      <div class="balance-unit">EscolaCoins</div>
+      <div class="balance-unit">MurraCoins</div>
     </div>
 
     <!-- Page nav -->
@@ -770,7 +770,7 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <div class="coin-sm">₿</div>
-      EscolaCoin
+      MurraCoin
       <span class="admin-badge">ADMIN</span>
     </div>
     <div class="navbar-right">
@@ -782,7 +782,7 @@
     <div class="balance-card">
       <div class="balance-label">🌍 Total em circulação</div>
       <div class="balance-amount" id="admin-total-coins">0</div>
-      <div class="balance-unit">EscolaCoins distribuídas · <span id="admin-student-count">0</span> alunos ativos</div>
+      <div class="balance-unit">MurraCoins distribuídas · <span id="admin-student-count">0</span> alunos ativos</div>
     </div>
 
     <div class="admin-tabs">
@@ -813,7 +813,7 @@
     <!-- PANEL: GIVE -->
     <div id="panel-give" class="admin-panel">
       <div class="card">
-        <div class="card-title">💰 Dar EscolaCoins a um Aluno</div>
+        <div class="card-title">💰 Dar MurraCoins a um Aluno</div>
         <div id="give-alert"></div>
         <div class="form-group">
           <label>Aluno</label>
@@ -829,7 +829,7 @@
           <label>Motivo (opcional)</label>
           <textarea id="give-note" placeholder="Ex: Bom comportamento, trabalho excelente, participação…"></textarea>
         </div>
-        <button class="btn btn-gold btn-block" style="margin-top:8px;" onclick="handleGiveCoins()">💰 Enviar EscolaCoins</button>
+        <button class="btn btn-gold btn-block" style="margin-top:8px;" onclick="handleGiveCoins()">💰 Enviar MurraCoins</button>
       </div>
     </div>
 
@@ -1330,7 +1330,7 @@ window.handleRedeemCode = async function() {
   try {
     const val = await redeemCode(code);
     document.getElementById('code-input').value = '';
-    showAlert('code-alert',`🎉 Parabéns! Recebeste ${val} EscolaCoins!`,'success');
+    showAlert('code-alert',`🎉 Parabéns! Recebeste ${val} MurraCoins!`,'success');
     await loadStudentData();
   } catch(e) { showAlert('code-alert', e.message,'error'); }
 };
@@ -1435,7 +1435,7 @@ window.handleGiveCoins = async function() {
     await giveCoins(userId, amount, note);
     document.getElementById('give-amount').value='';
     document.getElementById('give-note').value='';
-    showAlert('give-alert',`✅ ${amount} EscolaCoins enviadas!`,'success');
+    showAlert('give-alert',`✅ ${amount} MurraCoins enviadas!`,'success');
     await loadAdminData();
   } catch { showAlert('give-alert','Erro ao enviar moedas.','error'); }
 };
@@ -1638,13 +1638,19 @@ async function getUserPurchases(uid) {
 }
 
 // ── Student shop ─────────────────────────────────
+let pendingPurchase = null;
+let productsMap = {};
+
 window.loadStudentShop = async function() {
-  // Re-fetch balance
   userData = await getUserData(currentUser.uid);
   document.getElementById('student-balance').textContent = (userData.balance||0).toLocaleString('pt-PT');
 
   const products = await getAllProducts();
   const grid = document.getElementById('shop-grid-student');
+
+  // Store in map for safe access
+  productsMap = {};
+  products.forEach(p => productsMap[p.id] = p);
 
   if (!products.length) {
     grid.innerHTML = `<div class="empty-state"><span class="em-ico">🏪</span>A loja está vazia por enquanto.<br>O professor irá adicionar produtos em breve!</div>`;
@@ -1653,17 +1659,17 @@ window.loadStudentShop = async function() {
       const outOfStock = p.stock === 0;
       const cantAfford = (userData.balance||0) < p.price;
       const disabled   = outOfStock || cantAfford;
-    const thumbHtml = p.image
-      ? `<img class="product-card-thumb" src="${p.image}" alt="${p.name}">`
-      : `<span class="product-card-emoji">${p.emoji||'🛍️'}</span>`;
+      const thumbHtml  = p.image
+        ? `<img class="product-card-thumb" src="${p.image}" alt="">`
+        : `<span class="product-card-emoji">${p.emoji||'🛍️'}</span>`;
       return `<div class="product-card ${outOfStock?'out-of-stock':''}">
         ${thumbHtml}
         <div class="product-card-body">
-          <div class="product-name">${p.emoji&&!p.image?'':p.emoji||''} ${p.name}</div>
+          <div class="product-name">${p.name}</div>
           ${p.desc ? `<div class="product-desc">${p.desc}</div>` : ''}
           <div class="product-price">${p.price} ₿</div>
           <div class="product-stock">${p.stock < 0 ? 'Ilimitado' : p.stock === 0 ? '❌ Esgotado' : `${p.stock} disponíveis`}</div>
-          <button class="product-buy-btn" ${disabled?'disabled':''} onclick="openBuyModal('${p.id}','${encodeURIComponent(p.name)}','${p.emoji||'🛍️'}','${encodeURIComponent(p.desc||'')}',${p.price},${p.stock})">
+          <button class="product-buy-btn" ${disabled?'disabled':''} onclick="openBuyModal('${p.id}')">
             ${outOfStock ? 'Esgotado' : cantAfford ? 'Saldo insuficiente' : 'Comprar 🛒'}
           </button>
         </div>
@@ -1690,14 +1696,17 @@ window.loadStudentShop = async function() {
 };
 
 // ── Buy modal ────────────────────────────────────
-window.openBuyModal = function(id, name, emoji, desc, price, stock) {
-  name = decodeURIComponent(name);
-  desc = decodeURIComponent(desc);
-  pendingPurchase = { id, name, emoji, desc, price, stock };
-  document.getElementById('modal-emoji').textContent = emoji;
-  document.getElementById('modal-name').textContent  = name;
-  document.getElementById('modal-desc').textContent  = desc || '';
-  document.getElementById('modal-price').textContent = `${price} ₿`;
+window.openBuyModal = function(id) {
+  const p = productsMap[id];
+  if (!p) return;
+  pendingPurchase = p;
+  document.getElementById('modal-emoji').textContent = p.image ? '' : (p.emoji||'🛍️');
+  if (p.image) {
+    document.getElementById('modal-emoji').innerHTML = `<img src="${p.image}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;">`;
+  }
+  document.getElementById('modal-name').textContent  = p.name;
+  document.getElementById('modal-desc').textContent  = p.desc || '';
+  document.getElementById('modal-price').textContent = `${p.price} ₿`;
   document.getElementById('modal-alert').innerHTML   = '';
   document.getElementById('buy-modal').classList.add('open');
 };
